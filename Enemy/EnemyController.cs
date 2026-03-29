@@ -20,26 +20,9 @@ public class EnemyController : Controller
         SetStates();
         SetOnEnterState();
         SetOnExitState();
-        SetFixedUpdateState();
+        SetOnFixedUpdateState();
 
         Initialize();
-    }
-    private void SetOnEnterState()
-    {
-        pursuingState.OnEnterState += () =>
-        {
-            navMeshAgent.speed = 5;
-        };
-
-        deadState.OnEnterState += () =>
-        {
-            if (navMeshAgent != null)
-            {
-                navMeshAgent.isStopped = true;
-            }
-        };
-
-        
     }
     
     private void SetStates()
@@ -55,12 +38,33 @@ public class EnemyController : Controller
         };
     }
 
-    private void SetOnExitState()
+    public override void SetOnEnterState()
+    {
+        pursuingState.OnEnterState += () =>
+        {
+            navMeshAgent.speed = 5;
+        };
+
+        deadState.OnEnterState += () =>
+        {
+            if (navMeshAgent != null)
+            {
+                navMeshAgent.isStopped = true;
+            }
+        };
+    }
+
+    public override void SetOnExitState()
     {
 
     }
 
-    private void SetFixedUpdateState()
+    public override void SetOnUpdateState()
+    {
+
+    }
+
+    public override void SetOnFixedUpdateState()
     {
         idlingState.OnFixedUpdate += () =>
         {

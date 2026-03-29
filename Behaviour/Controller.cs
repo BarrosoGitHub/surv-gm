@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class Controller : MonoBehaviour
+public abstract class Controller : MonoBehaviour
 {
     public Action<State> OnStateChanged;
     public Action<Controller> OnTargetChanged;
@@ -80,23 +80,11 @@ public class Controller : MonoBehaviour
         }
     }
 
-    private virtual void SetOnEnterState()
-    {
-        
-    }
+    public abstract void SetOnEnterState();
 
-    public virtual void SetOnExitState()
-    {
+    public abstract void SetOnExitState();
 
-    }
+    public abstract void SetOnUpdateState();
 
-    private virtual void SetOnUpdateState()
-    {
-
-    }
-
-    public virtual void SetOnFixedUpdateState()
-    {
-
-    }
+    public abstract void SetOnFixedUpdateState();
 }

@@ -29,7 +29,7 @@ public class PlayerController : Controller
 
     public LayerMask groundMask;
 
-    override void Start()
+    public override void Start()
     {
         base.Start();
 
@@ -46,8 +46,18 @@ public class PlayerController : Controller
         State = movingState;
 
     }
+    
+    public override void SetOnEnterState()
+    {
+       
+    }
 
-    private override void SetOnUpdateState()
+    public override void SetOnExitState()
+    {
+        
+    }
+
+    public override void SetOnUpdateState()
     {
         movingState.OnUpdate += () =>
         {
@@ -55,7 +65,7 @@ public class PlayerController : Controller
         };
     }
 
-    private override void SetOnFixedUpdateState()
+    public override void SetOnFixedUpdateState()
     {
         movingState.OnFixedUpdate += () =>
         {
