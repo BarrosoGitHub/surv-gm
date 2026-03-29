@@ -29,35 +29,25 @@ public class PlayerController : Controller
 
     public LayerMask groundMask;
 
-    void Awake()
+    override void Start()
     {
         base.Start();
 
         inputControls = new PlayerControls();
 
         SetStates();
-        SetOnEnterState();
-        SetOnExitState();
-        SetOnUpdateState();
-        SetOnFixedUpdateState();
-    }
-
-    public override void Start()
-    {
-        State = movingState;
+        
     }
 
     private void SetStates()
     {
         movingState = new State();
-    }
 
-    private void SetOnEnterState()
-    {
+        State = movingState;
 
     }
 
-    private void SetOnUpdateState()
+    private override void SetOnUpdateState()
     {
         movingState.OnUpdate += () =>
         {
@@ -65,17 +55,12 @@ public class PlayerController : Controller
         };
     }
 
-    private void SetOnFixedUpdateState()
+    private override void SetOnFixedUpdateState()
     {
         movingState.OnFixedUpdate += () =>
         {
             PhysicsUpdate(new Vector3(0.95f, 1, 0.95f), Entity.stats.MaxSpeed);
         };
-    }
-
-    private void SetOnExitState()
-    {
-
     }
 
     private void Update()

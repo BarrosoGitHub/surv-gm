@@ -108,6 +108,7 @@ public class EnemyController : Controller
 
     private void OnDead()
     {
+        //Review
         State = deadState;
         col.enabled = false;
         //Some death logic here, like playing an animation, dropping loot, etc. delay...

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class CameraTarget : MonoBehaviour
+public class CameraAimOffset : MonoBehaviour
 {
     [SerializeField] private Transform playerTransform;
     [Range(2f, 10f)] [SerializeField] private float cameraTargetDivider = 5f;

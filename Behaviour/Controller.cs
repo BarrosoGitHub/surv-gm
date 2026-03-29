@@ -59,6 +59,11 @@ public class Controller : MonoBehaviour
         col = GetComponent<Collider>();
         rb = GetComponent<Rigidbody>();
 
+        SetOnEnterState();
+        SetOnExitState();
+        SetOnUpdateState();
+        SetOnFixedUpdateState();
+
         if (entity == null)
         {
             entity = new Entity(
@@ -73,5 +78,25 @@ public class Controller : MonoBehaviour
             )
             );
         }
+    }
+
+    private virtual void SetOnEnterState()
+    {
+        
+    }
+
+    public virtual void SetOnExitState()
+    {
+
+    }
+
+    private virtual void SetOnUpdateState()
+    {
+
+    }
+
+    public virtual void SetOnFixedUpdateState()
+    {
+
     }
 }

@@ -46,8 +46,10 @@ public class PlayerShooter : MonoBehaviour
         {
             if (enemy == null || enemy.IsDead) continue;
 
-            Debug.Log($"[PlayerShooter] Checking enemy: {enemy.entity.CurrentHealth} HP | Position: {enemy.transform.position}", enemy);
-                 
+            if (enableLogs)
+            {
+                Debug.Log($"[PlayerShooter] Checking enemy: {enemy.entity.CurrentHealth} HP | Position: {enemy.transform.position}", enemy);
+            }
             float dist = Vector3.Distance(transform.position, enemy.transform.position);
             if (dist <= closestDist)
             {
@@ -90,10 +92,10 @@ public class PlayerShooter : MonoBehaviour
         }
         else
         {
-            didHit = Physics.Raycast(origin, direction, out hit, range);
+            didHit = Physics.Raycast(origin, direction, out hit, range, hitMask, QueryTriggerInteraction.Ignore);
         }
 
-        if (Physics.Raycast(origin, direction, out hit, range))
+        if (didHit)
         {
             if (enableVisualLogs)
             {
