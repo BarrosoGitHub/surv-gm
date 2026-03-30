@@ -104,20 +104,4 @@ public class EnemyController : Controller
 
         State = pursuingState;
     }
-
-    public void ApplyDamage(float amount)
-    {
-        entity.CurrentHealth -= amount;
-    }
-
-    private void OnDead()
-    {
-        //Review
-        State = deadState;
-        col.enabled = false;
-        //Some death logic here, like playing an animation, dropping loot, etc. delay...
-        OnDied?.Invoke(this);
-    }
-
-    public bool IsDead => State == deadState;
 }

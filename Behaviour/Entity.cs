@@ -33,7 +33,7 @@ public class Entity
     public Stats stats;
 
     public Action<float> OnHealthChanged;
-    public Action OnDied;
+    public Action OnEntityDied;
 
     private float currentHealth;
     public float CurrentHealth
@@ -53,7 +53,7 @@ public class Entity
             else if (value < 0)
             {
                 currentHealth = 0;
-                OnDied?.Invoke();
+                OnEntityDied?.Invoke();
             }
             else
             {
@@ -92,5 +92,12 @@ public class Entity
             stats = stats.Add(equipment.Stats);
         }
     }
-   
+
+    public void TakeDamage(float amount)
+    {
+        float mitigated = amount - (stats.Defense * stats.DefensePerc);
+        mitigated = Mathf.Max(0, mitigated);
+
+        CurrentHealth -= mitigated;
+    }
 }
