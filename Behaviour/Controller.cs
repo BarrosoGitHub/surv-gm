@@ -59,6 +59,7 @@ public abstract class Controller : MonoBehaviour
     protected virtual void Awake()
     {
         //This needs a better way to start
+        //ScriptableObject or something
         if (entity == null)
         {
             entity = new Entity(
