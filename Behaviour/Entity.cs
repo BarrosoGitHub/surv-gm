@@ -1,36 +1,12 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Entity
 {
     private Stats baseStats;
-    private Stats BaseStats
-    {
-        get
-        {
-            return baseStats;
-        }
-        set
-        {
-            baseStats = value;
-            UpdateStats();
-        }
-    }
+    private Stats stats;
     private List<Equipment> equipmentList;
-    private List<Equipment> EquipmentList
-    {
-        get
-        {
-            return equipmentList;
-        }
-        set
-        {
-            equipmentList = value;
-            UpdateStats();
-        }
-    }
-
-    public Stats stats;
 
     public Action<float> OnHealthChanged;
     public Action OnEntityDied;
@@ -67,20 +43,34 @@ public class Entity
         }
     }
 
-    public Entity(Stats baseStats)
+    public Entity(Stats baseStats, List<Equipment> equipmentList = null)
     {
         this.baseStats = baseStats;
-        EquipmentList = new List<Equipment>();
+        this.equipmentList = equipmentList ?? new List<Equipment>();
+        UpdateStats();
+        currentHealth = stats.MaxHealth;
     }
 
     public void AddBaseStats(Stats additionalStats)
     {
-        BaseStats = BaseStats.Add(additionalStats);
+        baseStats = baseStats.Add(additionalStats);
+        UpdateStats();
     }
 
-    public void AddEquipment(Equipment equipment)
+    public void Equip(Equipment equipment)
     {
-        EquipmentList.Add(equipment);
+        if (equipment == null) return;
+
+        equipmentList.Add(equipment);
+        UpdateStats();
+    }
+
+    public void Unequip(Equipment equipment)
+    {
+        if (equipment == null) return;
+        if (!equipmentList.Remove(equipment)) return;
+
+        UpdateStats();
     }
 
     private void UpdateStats()
@@ -93,11 +83,41 @@ public class Entity
         }
     }
 
-    public void TakeDamage(float amount)
+    private DamageResult CalculateDamage()
     {
-        float mitigated = amount - (stats.Defense * stats.DefensePerc);
+        float damage = stats.BaseDamage * (1 + stats.BaseDamagePerc);
+
+        bool isCritical = Random.Range(0f, 100f) <= stats.CriticalChance;
+
+        if (isCritical)
+            damage *= stats.CriticalDamage;
+
+        return new DamageResult
+        {
+            Damage = damage,
+            IsCritical = isCritical
+        };
+    }
+
+    public DamageResult Attack(Entity target)
+    {
+        DamageResult result = CalculateDamage();
+        float mitigated = target.TakeDamage(result.Damage);
+        return new DamageResult { Damage = mitigated, IsCritical = result.IsCritical };
+    }
+
+    public float TakeDamage(float amount)
+    {
+        float mitigated = amount - (stats.Defense * (1 + stats.DefensePerc));
         mitigated = Mathf.Max(0, mitigated);
 
         CurrentHealth -= mitigated;
+
+        return mitigated;
+    }
+
+    public void Heal(float amount)
+    {
+        CurrentHealth += amount;
     }
 }

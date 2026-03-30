@@ -1,15 +1,13 @@
 using System;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 public abstract class Controller : MonoBehaviour
 {
-    public Action<Controller> OnAttackController;
-    public Action<Controller> OnDamaged;
+    public Action<Controller, InteractionContext> OnInteract;
+    public Action<Controller, InteractionContext> OnReceivedInteraction;
 
     public Action<State> OnStateChanged;
     public Action<Controller> OnTargetChanged;
-    public Action<Controller> OnDied;
 
     private State state;
     private Controller target;
@@ -96,25 +94,35 @@ public abstract class Controller : MonoBehaviour
 
     public abstract void SetOnFixedUpdateState();
 
-    private void AttackController(Controller other)
+    public void Interact(Controller other, InteractionContext ctx)
     {
-        float damage = entity.stats.BaseDamage * entity.stats.BaseDamagePerc;
-        bool isCritical = UnityEngine.Random.Range(0f, 100f) <= entity.stats.CriticalChance;
-        float finalDamage = isCritical ? damage * entity.stats.CriticalDamage : damage;
+        InteractionContext result = ResolveInteraction(other, ctx);
 
-        OnAttackController?.Invoke(other, finalDamage);
-
-        other.GetAttackedByController(this, finalDamage);
+        OnInteract?.Invoke(other, result);
+        other.OnReceivedInteraction?.Invoke(this, result);
     }
 
-    public void GetAttackedByController(Controller attackerController, float amount)
+    private InteractionContext ResolveInteraction(Controller other, InteractionContext ctx)
     {
-        entity.TakeDamage(amount);
-
-        OnDamaged?.Invoke(attackerController);
+        switch (ctx.Type)
+        {
+            case InteractionType.Attack:
+                DamageResult dmg = entity.Attack(other.entity);
+                return new InteractionContext { Type = InteractionType.Attack, Value = dmg.Damage, IsCritical = dmg.IsCritical };
+            case InteractionType.Heal:
+                other.entity.Heal(ctx.Value);
+                return ctx;
+            default:
+                return ctx;
+        }
     }
 
-    public virtual OnControllerDied()
+    // public void AttackController(Controller other)
+    // {
+    //     Interact(other, new InteractionContext { Type = InteractionType.Attack });
+    // }
+
+    public virtual void OnControllerDied()
     {
 
     }
