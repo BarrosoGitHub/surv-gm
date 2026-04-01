@@ -118,25 +118,24 @@ public abstract class Controller : MonoBehaviour
         }
     }
 
-    // public void AttackController(Controller other)
-    // {
-    //     Interact(other, new InteractionContext { Type = InteractionType.Attack });
-    // }
-
     public virtual void OnControllerDied()
     {
-
+        
     }
 
     private void OnEnable()
     {
         if (entity != null)
+        {
             entity.OnEntityDied += OnControllerDied;
+        }
     }
 
     private void OnDisable()
     {
         if (entity != null)
+        {
             entity.OnEntityDied -= OnControllerDied;
+        }
     }
 }
