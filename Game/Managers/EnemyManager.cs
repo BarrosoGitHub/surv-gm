@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 
 public class EnemyManager : MonoBehaviour
 {
@@ -83,16 +84,16 @@ public class EnemyManager : MonoBehaviour
     private IEnumerator PerformEnemyGroupAttackCoroutine(EnemyGroup enemyGroup)
     {
         List<EnemyController> enemiesToPerformAttack = null;
-        var targetPosition = enemyGroup.Target.transform.position;
+        var targetPosition = enemyGroup.TargetController.transform.position;
 
         while (enemiesToPerformAttack == null)
         {
-            var orderedEnemiesByDistance = enemyGroup.enemyList
+            var orderedEnemiesByDistance = enemyGroup.EnemyList
                         .OrderBy(c => (c.transform.position - targetPosition).sqrMagnitude)
                         .ToList();
 
             if (orderedEnemiesByDistance.Count > 0 &&
-                    Vector3.Distance(enemyGroup.target.transform.position,
+                    Vector3.Distance(targetPosition,
                         orderedEnemiesByDistance[0].transform.position) > enemyGroup.MaxEngagementDistance)
             {
                 yield return null; // Wait for the next frame before re-evaluating
@@ -121,7 +122,7 @@ public class EnemyManager : MonoBehaviour
 
         foreach (EnemyController enemyController in enemiesToPerformAttack)
         {
-            enemyController.PerformAttack();
+            // enemyController.PerformAttack();
         }
 
         yield return new WaitForSeconds(enemyGroup.AttackInterval);

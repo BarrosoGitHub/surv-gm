@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        GameState = GameState.StartMenu;
+        GameState = GameState.MainMenu;
 
         gameObject.AddComponent<EnemyManager>();
         controllerSpawner = gameObject.AddComponent<ControllerSpawner>();
@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        GameState = GameState.InGame;
+        GameState = GameState.Playing;
     }
 
     void SpawnPlayer()

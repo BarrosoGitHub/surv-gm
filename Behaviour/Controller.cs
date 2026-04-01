@@ -8,6 +8,7 @@ public abstract class Controller : MonoBehaviour
 
     public Action<State> OnStateChanged;
     public Action<Controller> OnTargetChanged;
+    public Action<Controller> OnControllerDied;
 
     private State state;
     private Controller target;
@@ -118,16 +119,16 @@ public abstract class Controller : MonoBehaviour
         }
     }
 
-    public virtual void OnControllerDied()
+    public virtual void OnDied()
     {
-        
+        OnControllerDied?.Invoke(this);
     }
 
     private void OnEnable()
     {
         if (entity != null)
         {
-            entity.OnEntityDied += OnControllerDied;
+            entity.OnEntityDied += OnDied;
         }
     }
 
@@ -135,7 +136,7 @@ public abstract class Controller : MonoBehaviour
     {
         if (entity != null)
         {
-            entity.OnEntityDied -= OnControllerDied;
+            entity.OnEntityDied -= OnDied;
         }
     }
 }

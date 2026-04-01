@@ -120,18 +120,18 @@ public class RoundSystemManager : MonoBehaviour
         EnemyController enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
         enemy.Initialize();
         aliveEnemies.Add(enemy);
-        enemy.OnDied += HandleEnemyDied;
+        // enemy.OnControllerDied += HandleEnemyDied;
     }
 
-    private void HandleEnemyDied(Controller enemy)
-    {
-        if (enemy != null)
-        {
-            enemy.OnDied -= HandleEnemyDied;
-        }
+    // private void HandleEnemyDied(Controller enemy)
+    // {
+    //     if (enemy != null)
+    //     {
+    //         enemy.OnDied -= HandleEnemyDied;
+    //     }
 
-        aliveEnemies.Remove((EnemyController) enemy);
-    }
+    //     aliveEnemies.Remove((EnemyController) enemy);
+    // }
 
     private void OnDestroy()
     {

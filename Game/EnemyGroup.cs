@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 public class EnemyGroup
 {
+    public EnemyType EnemyType { get; set; }
     public List<EnemyController> EnemyList { get; set; }
     public Controller TargetController { get; set; }
     public int MaxNumberOfEnemies { get; set; }

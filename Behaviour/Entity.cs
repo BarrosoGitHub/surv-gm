@@ -87,7 +87,7 @@ public class Entity
     {
         float damage = stats.BaseDamage * (1 + stats.BaseDamagePerc);
 
-        bool isCritical = Random.Range(0f, 100f) <= stats.CriticalChance;
+        bool isCritical = UnityEngine.Random.Range(0f, 100f) <= stats.CriticalChance;
 
         if (isCritical)
             damage *= stats.CriticalDamage;

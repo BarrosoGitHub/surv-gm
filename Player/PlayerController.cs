@@ -69,7 +69,7 @@ public class PlayerController : Controller
     {
         movingState.OnFixedUpdate += () =>
         {
-            PhysicsUpdate(new Vector3(0.95f, 1, 0.95f), Entity.stats.MaxSpeed);
+            PhysicsUpdate(new Vector3(0.95f, 1, 0.95f), entity.stats.MaxSpeed);
         };
     }
 
