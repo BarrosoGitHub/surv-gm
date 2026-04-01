@@ -18,9 +18,9 @@ public class EnemyManager : MonoBehaviour
     {
         enemyGroups = new List<EnemyGroup>
         {
-            new EnemyGroup(null, 0, 0f, 0, 0f) { EnemyType = EnemyType.Normal },
-            new EnemyGroup(null, 0, 0f, 0, 0f) { EnemyType = EnemyType.Tank },
-            new EnemyGroup(null, 0, 0f, 0, 0f) { EnemyType = EnemyType.Boss }
+            new EnemyGroup(EnemyType.Normal, null, 0, 0f, 0, 0f),
+            new EnemyGroup(EnemyType.Tank, null, 0, 0f, 0, 0f),
+            new EnemyGroup(EnemyType.Boss, null, 0, 0f, 0, 0f) 
         };
     }
 
@@ -64,7 +64,7 @@ public class EnemyManager : MonoBehaviour
 
                     group.EnemyList.Remove((EnemyController) enemyController);
 
-                    controllerSpawner.DespawnController(group.EnemyType.ToString(), controller, 5);
+                    controllerSpawner.DespawnController(group.EnemyType.ToString(), controller);
 
                     break;
                 }

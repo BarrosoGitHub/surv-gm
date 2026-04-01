@@ -18,7 +18,7 @@ public class ControllerSpawner : MonoBehaviour
         if (controller != null)
         {
             OnControllerSpawned?.Invoke(controller);
-            controller.OnControllerSpawn();
+            // controller.OnControllerSpawn();
         }
 
         return controller;
