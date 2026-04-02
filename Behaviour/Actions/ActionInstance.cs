@@ -1,0 +1,19 @@
+public abstract class ActionInstance
+{
+    public State preparing;
+    public State executing;
+
+    public float preparingTime;
+    public float executingTime;
+
+    protected void InitializeStates()
+    {
+        preparing = new State(StateType.PREPARING);
+        executing = new State(StateType.EXECUTING);
+    }
+
+    public abstract void Preparing();
+    public abstract void Executing();
+    public abstract void Complete();
+    public abstract void Cancel();
+}

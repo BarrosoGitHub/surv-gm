@@ -5,7 +5,11 @@ public abstract class Controller : MonoBehaviour
 {
     public Action<Controller, InteractionContext> OnInteract;
     public Action<Controller, InteractionContext> OnReceivedInteraction;
-
+    public Action<ActionInstance> OnActionInstancePerformed;
+    public Action<float, ActionInstance> OnPreparingActionInstance;
+    public Action<float, ActionInstance> OnExecutingActionInstance;
+    public Action<ActionInstance> OnCompleteActionInstance;
+    public Action<ActionInstance> OnCancelActionInstance;
     public Action<State> OnStateChanged;
     public Action<Controller> OnTargetChanged;
     public Action<Controller> OnControllerDied;
@@ -56,9 +60,14 @@ public abstract class Controller : MonoBehaviour
     public Rigidbody rb;
 
     public Entity entity;
+    public List<ActionInstance> ActionInstances { get; set; }
+    public ActionInstance CurrentActionInstance { get; private set; }
+    public Sequence ActionSequence;
 
     protected virtual void Awake()
     {
+        ActionInstances = new List<ActionInstance>();
+
         //This needs a better way to start
         //ScriptableObject or something
         if (entity == null)
@@ -122,6 +131,43 @@ public abstract class Controller : MonoBehaviour
     public virtual void OnDied()
     {
         OnControllerDied?.Invoke(this);
+    }
+
+    protected void PerformAction(ActionInstance actionInstance)
+    {
+        ActionSequence.Kill();
+        DOTween.Kill("ActionTween");
+        CurrentActionInstance = actionInstance;
+        OnActionInstancePerformed?.Invoke(actionInstance);
+        State = actionInstance.preparing;
+        actionInstance.Preparing();
+        OnPreparingActionInstance?.Invoke(actionInstance.preparingTime, actionInstance);
+
+        ActionSequence = DOTween.Sequence();
+
+        ActionSequence.AppendInterval(actionInstance.preparingTime).AppendCallback(() =>
+        {
+            State = actionInstance.executing;
+            actionInstance.Executing();
+            OnExecutingActionInstance?.Invoke(actionInstance.executingTime, actionInstance);
+        });
+        ActionSequence.AppendInterval(actionInstance.executingTime).OnComplete(() =>
+        {
+            actionInstance.Complete();
+            OnCompleteActionInstance?.Invoke(actionInstance);
+            CurrentActionInstance = null;
+        });
+    }
+
+    public void CancelAction()
+    {
+        if (CurrentActionInstance == null) return;
+
+        ActionSequence.Kill();
+        DOTween.Kill("ActionTween");
+        CurrentActionInstance.Cancel();
+        OnCancelActionInstance?.Invoke(CurrentActionInstance);
+        CurrentActionInstance = null;
     }
 
     private void OnEnable()
