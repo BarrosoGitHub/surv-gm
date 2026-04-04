@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,8 +9,10 @@ public class EnemyController : Controller
     public List<State> states;
     public State inactiveState, idlingState, pursuingState, bracingState, stunnedState, deadState;
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         navMeshAgent = GetComponent<NavMeshAgent>();
     }
 

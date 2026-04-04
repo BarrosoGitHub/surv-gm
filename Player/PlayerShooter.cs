@@ -20,6 +20,7 @@ public class PlayerShooter : MonoBehaviour
     [SerializeField] private bool enableLogs = true;
     [SerializeField] private bool enableVisualLogs = true;
     [SerializeField] private float debugRayDuration = 0.5f;
+    public PlayerController playerController;
 
     private float _nextFireTime;
 
@@ -38,13 +39,13 @@ public class PlayerShooter : MonoBehaviour
 
     private EnemyController FindClosestAliveEnemyInRange()
     {
-        EnemyController[] enemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+        EnemyController[] enemies = FindObjectsByType<EnemyController>();
         EnemyController closest = null;
         float closestDist = range;
 
         foreach (EnemyController enemy in enemies)
         {
-            if (enemy == null || enemy.IsDead) continue;
+            if (enemy == null || enemy.State == enemy.deadState) continue;
 
             if (enableLogs)
             {
@@ -105,7 +106,7 @@ public class PlayerShooter : MonoBehaviour
             EnemyController enemy = hit.collider.GetComponentInParent<EnemyController>();
             if (enemy != null)
             {
-                enemy.ApplyDamage(damage);
+                playerController.AttackController(enemy);
 
                 if (enableLogs)
                 {

@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
+using DG.Tweening;
 
 public abstract class Controller : MonoBehaviour
 {
@@ -105,7 +107,12 @@ public abstract class Controller : MonoBehaviour
 
     public abstract void SetOnFixedUpdateState();
 
-    public void Interact(Controller other, InteractionContext ctx)
+    public void AttackController(Controller target)
+    {
+        Interact(target, new InteractionContext { Type = InteractionType.Attack });
+    }
+
+    private void Interact(Controller other, InteractionContext ctx)
     {
         InteractionContext result = ResolveInteraction(other, ctx);
 

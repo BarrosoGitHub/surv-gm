@@ -10,8 +10,7 @@ public class EnemyGroup
     public int MaxNumberOfEnemiesThatCanEngageSimultaneously { get; set; }
     public float AttackInterval { get; set; }
     
-
-    public EnemyGroup(EnemyType enemyType,Controller targetController, int maxNumberOfEnemies, float maxEngagementDistance, int maxNumberOfEnemiesThatCanEngageSimultaneously, float attackInterval)
+    public EnemyGroup(EnemyType enemyType, Controller targetController, int maxNumberOfEnemies, float maxEngagementDistance, int maxNumberOfEnemiesThatCanEngageSimultaneously, float attackInterval)
     {
         EnemyType = enemyType;
         TargetController = targetController;

@@ -6,27 +6,30 @@ using System.Linq;
 
 public class EnemyManager : MonoBehaviour
 {
-    private List<EnemyGroup> enemyGroups;
+    private List<EnemyGroup> enemyGroups; // change to suse currentWaveSpecification.EnemyGroups when wave system is implemented
+    private WaveSpecification currentWaveSpecification;
+    private WaveSystemManager waveSystemManager;
     private ControllerSpawner controllerSpawner;
 
     void Awake()
     {
         controllerSpawner = GetComponent<ControllerSpawner>();
+        waveSystemManager = GetComponent<WaveSystemManager>();
     }
 
     private void Start()
     {
-        enemyGroups = new List<EnemyGroup>
-        {
-            new EnemyGroup(EnemyType.Normal, null, 0, 0f, 0, 0f),
-            new EnemyGroup(EnemyType.Tank, null, 0, 0f, 0, 0f),
-            new EnemyGroup(EnemyType.Boss, null, 0, 0f, 0, 0f) 
-        };
+
     }
 
-    private void OnGameStateChanged(GameState gameState)
+    private void OnWaveSpecificationChanged(WaveSpecification waveSpecification)
     {
-        if (gameState == GameState.Playing)
+        currentWaveSpecification = waveSpecification;
+    }
+
+    private void OnWavePhaseChanged(WavePhase wavePhase)
+    {
+        if (wavePhase == WavePhase.WaveInProgress)
         {
             foreach (EnemyGroup enemyGroup in enemyGroups)
             {
@@ -36,7 +39,7 @@ public class EnemyManager : MonoBehaviour
 
             }
         }
-        if (gameState == GameState.MainMenu)
+        if (wavePhase == WavePhase.Stoped)
         {
             StopAllCoroutines();
         }
@@ -107,7 +110,7 @@ public class EnemyManager : MonoBehaviour
                 if (enemyGroup.MaxNumberOfEnemiesThatCanEngageSimultaneously > numberOfSimultaneousAttackersCount)
                 {
                     EnemyController enemyController = orderedEnemiesByDistance[i];
-                    if (enemyController.IsAliveAndReady)
+                    if (enemyController.State == enemyController.pursuingState)
                     {
                         enemiesToPerformAttack.Add(enemyController);
                         numberOfSimultaneousAttackersCount++;
@@ -152,7 +155,7 @@ public class EnemyManager : MonoBehaviour
     {
         return Physics.OverlapSphere(position, radious)
             .Select(c => c.GetComponent<EnemyController>())
-            .Where(e => e != null && e.IsAliveAndReady)
+            .Where(e => e != null && (e.State == e.idlingState || e.State == e.pursuingState))
             .OrderBy(e => (e.transform.position - position).sqrMagnitude)
             .Take(maxNumberOfEnemies)
             .ToList();
@@ -163,8 +166,7 @@ public class EnemyManager : MonoBehaviour
         if (enemyGroup.EnemyList.Contains(enemyController))
         {
             enemyGroup.EnemyList.Remove(enemyController);
-
-            enemyController.ChangeToIdleStateGracefully();
+            enemyController.State = enemyController.idlingState;
         }
     }
 
@@ -174,8 +176,7 @@ public class EnemyManager : MonoBehaviour
         {
             enemyGroup.EnemyList.Add(enemyController);
             enemyController.Target = enemyGroup.TargetController;
-
-            //Add aditional logic for adding enemy to group if needed
+            enemyController.State = enemyController.pursuingState;
         }
     }
 }

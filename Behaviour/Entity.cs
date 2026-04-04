@@ -5,7 +5,7 @@ using UnityEngine;
 public class Entity
 {
     private Stats baseStats;
-    private Stats stats;
+    public Stats stats;
     private List<Equipment> equipmentList;
 
     public Action<float> OnHealthChanged;
