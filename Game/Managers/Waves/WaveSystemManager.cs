@@ -25,23 +25,20 @@ public class WaveSystemManager : MonoBehaviour
         }
     }
 
+    [field: SerializeField]
     public int CurrentWave { get; private set; }
 
     private void Awake()
     {
         gameManager = GetComponent<GameManager>();
-
-        gameManager.OnGameStateChanged += OnGameStateChanged;
     }
 
     private IEnumerator StartWavesCoroutine()
     {
         while (true)
         {
-            CurrentWavePhase = WavePhase.WaveInProgress; 
-            CurrentWave++;
-            GenerateWaveSpecification();
-
+            StartNewWave();
+            Debug.Log($"Started wave {CurrentWave}");
 
             // Wait for the wave to end before starting the next one
             yield return new WaitUntil(() => CurrentWavePhase == WavePhase.Complete);
@@ -49,6 +46,20 @@ public class WaveSystemManager : MonoBehaviour
             // Add a short delay between waves if needed
             yield return new WaitForSeconds(2f);
         }
+    }
+
+    private void StartNewWave()
+    {
+        CurrentWave++;
+        GenerateWaveSpecification();
+        CurrentWavePhase = WavePhase.WaveInProgress;
+        StartCoroutine(CompleteWaveAfterDelayCoroutine());
+    }
+
+    private IEnumerator CompleteWaveAfterDelayCoroutine()
+    {
+        yield return new WaitForSeconds(3);
+        CurrentWavePhase = WavePhase.Complete;
     }
 
     public void GenerateWaveSpecification()
@@ -116,7 +127,6 @@ public class WaveSystemManager : MonoBehaviour
     private void OnEnable()
     {
         gameManager.OnGameStateChanged += OnGameStateChanged;
-
     }
 
     private void OnDisable()

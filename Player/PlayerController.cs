@@ -40,8 +40,6 @@ public class PlayerController : Controller
     {
         SetStates();
         base.Start();
-
-        
     }
 
     private void SetStates()

@@ -18,12 +18,8 @@ public class EnemyController : Controller
 
     public override void Start()
     {
-        base.Start();
-
         SetStates();
-        SetOnEnterState();
-        SetOnExitState();
-        SetOnFixedUpdateState();
+        base.Start();
 
         Initialize();
     }
@@ -92,8 +88,6 @@ public class EnemyController : Controller
 
     public void Initialize()
     {
-     
-
         var playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
         {

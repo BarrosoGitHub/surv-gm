@@ -24,19 +24,20 @@ public class EnemyManager : MonoBehaviour
 
     private void OnWaveSpecificationChanged(WaveSpecification waveSpecification)
     {
+        Debug.Log($"New wave specification generated: {waveSpecification}");
         currentWaveSpecification = waveSpecification;
     }
 
     private void OnWavePhaseChanged(WavePhase wavePhase)
     {
+        Debug.Log($"Wave phase changed: {wavePhase}");
         if (wavePhase == WavePhase.WaveInProgress)
         {
-            foreach (EnemyGroup enemyGroup in enemyGroups)
+            foreach (EnemyGroup enemyGroup in currentWaveSpecification.enemyGroups)
             {
                 StartCoroutine(SpawnEnemiesCoroutine(enemyGroup));
-                StartCoroutine(PerformEnemyGroupAttackCoroutine(enemyGroup));
-                StartCoroutine(RefreshAttackingEnemyGroupCoroutine(enemyGroup));
-
+                // StartCoroutine(PerformEnemyGroupAttackCoroutine(enemyGroup));
+                // StartCoroutine(RefreshAttackingEnemyGroupCoroutine(enemyGroup));
             }
         }
         if (wavePhase == WavePhase.Stoped)
@@ -65,7 +66,7 @@ public class EnemyManager : MonoBehaviour
                 {
                     enemyController.OnControllerDied -= OnEnemyDied;
 
-                    group.EnemyList.Remove((EnemyController) enemyController);
+                    group.EnemyList.Remove((EnemyController)enemyController);
 
                     controllerSpawner.DespawnController(group.EnemyType.ToString(), controller);
 
@@ -178,5 +179,19 @@ public class EnemyManager : MonoBehaviour
             enemyController.Target = enemyGroup.TargetController;
             enemyController.State = enemyController.pursuingState;
         }
+    }
+
+    private void OnEnable()
+    {
+        waveSystemManager.OnWavePhaseChanged += OnWavePhaseChanged;
+        waveSystemManager.OnNewWaveSpecificationGenerated += OnWaveSpecificationChanged;
+
+    }
+
+    private void OnDisable()
+    {
+        waveSystemManager.OnWavePhaseChanged -= OnWavePhaseChanged;
+        waveSystemManager.OnNewWaveSpecificationGenerated -= OnWaveSpecificationChanged;
+
     }
 }

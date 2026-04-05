@@ -77,7 +77,7 @@ public abstract class Controller : MonoBehaviour
             entity = new Entity(
                 new Stats(
                     maxHealth: 1,
-                    maxSpeed: 1,
+                    maxSpeed: 3,
                     baseDamage: 1,
                     attackSpeed: 1,
                     defense: 0,
