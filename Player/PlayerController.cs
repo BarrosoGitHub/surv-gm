@@ -29,13 +29,18 @@ public class PlayerController : Controller
 
     public LayerMask groundMask;
 
-    public override void Start()
+    protected override void Awake()
     {
-        base.Start();
+        base.Awake();
 
         inputControls = new PlayerControls();
+    }
 
+    public override void Start()
+    {
         SetStates();
+        base.Start();
+
         
     }
 

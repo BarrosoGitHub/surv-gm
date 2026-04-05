@@ -38,6 +38,7 @@ public class WaveSystemManager : MonoBehaviour
     {
         while (true)
         {
+            CurrentWavePhase = WavePhase.WaveInProgress; 
             CurrentWave++;
             GenerateWaveSpecification();
 
@@ -101,7 +102,7 @@ public class WaveSystemManager : MonoBehaviour
                 CurrentWave = 0;
                 break;
             case GameState.Playing:
-                StartWave();
+                StartCoroutine(StartWavesCoroutine());
                 break;
             case GameState.Paused:
    
