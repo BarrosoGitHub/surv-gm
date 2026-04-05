@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public PlayerController playerController;
+
     private void Awake()
     {
         if (Instance == null)
@@ -35,11 +37,22 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        GetPlayerController();
 
     }
 
     void Start()
     {
         GameState = GameState.Playing;
+        
+    }
+
+    private void GetPlayerController()
+    {
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null)
+        {
+            playerController = playerObject.GetComponent<PlayerController>();
+        }
     }
 }

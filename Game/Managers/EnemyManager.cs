@@ -6,7 +6,6 @@ using System.Linq;
 
 public class EnemyManager : MonoBehaviour
 {
-    private List<EnemyGroup> enemyGroups; // change to suse currentWaveSpecification.EnemyGroups when wave system is implemented
     private WaveSpecification currentWaveSpecification;
     private WaveSystemManager waveSystemManager;
     private ControllerSpawner controllerSpawner;
@@ -37,7 +36,7 @@ public class EnemyManager : MonoBehaviour
             {
                 StartCoroutine(SpawnEnemiesCoroutine(enemyGroup));
                 // StartCoroutine(PerformEnemyGroupAttackCoroutine(enemyGroup));
-                // StartCoroutine(RefreshAttackingEnemyGroupCoroutine(enemyGroup));
+                StartCoroutine(RefreshAttackingEnemyGroupCoroutine(enemyGroup));
             }
         }
         if (wavePhase == WavePhase.Stoped)
@@ -60,7 +59,7 @@ public class EnemyManager : MonoBehaviour
         EnemyController enemyController = controller as EnemyController;
         if (enemyController != null)
         {
-            foreach (EnemyGroup group in enemyGroups)
+            foreach (EnemyGroup group in currentWaveSpecification.enemyGroups)
             {
                 if (group.EnemyList.Contains(enemyController))
                 {
@@ -81,7 +80,8 @@ public class EnemyManager : MonoBehaviour
         while (true)
         {
             SpawnEnemy(enemyGroup);
-            yield return new WaitForSeconds(2f); // Wait for 5 seconds before the next spawn
+            float spawnInterval = currentWaveSpecification.waveDuration / enemyGroup.MaxNumberOfEnemies; // TODO: calculate based on wave specification
+            yield return new WaitForSeconds(spawnInterval); // Wait for 5 seconds before the next spawn
         }
     }
 
@@ -134,6 +134,10 @@ public class EnemyManager : MonoBehaviour
 
     private IEnumerator RefreshAttackingEnemyGroupCoroutine(EnemyGroup enemyGroup)
     {
+        Debug.Log($"Started refreshing attacking enemy group coroutine for group: {enemyGroup.EnemyType}");
+        Debug.Log($"Current enemies in group: {enemyGroup.EnemyList.Count}");
+        Debug.Log($"Target controller: {enemyGroup.TargetController}");
+        
         List<EnemyController> closestEnemyControllers = GetClosestEnemyControllers(enemyGroup.MaxNumberOfEnemies, enemyGroup.TargetController.transform.position, enemyGroup.MaxEngagementDistance);
 
         List<EnemyController> enemiesToRemove = enemyGroup.EnemyList.Except(closestEnemyControllers).ToList();

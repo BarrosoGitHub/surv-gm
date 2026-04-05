@@ -27,6 +27,7 @@ public class WaveSystemManager : MonoBehaviour
 
     [field: SerializeField]
     public int CurrentWave { get; private set; }
+    public float currentWaveDuration;
 
     private void Awake()
     {
@@ -69,7 +70,7 @@ public class WaveSystemManager : MonoBehaviour
             waveNumber = CurrentWave,
             enemyGroups = GenerateEnemyGroupsForWave(CurrentWave),
             totalEnemiesPerType = CalculateTotalEnemiesPerTypeForWave(CurrentWave), // TODO: generate based on round config
-            waveDuration = 30f // TODO: calculate based on spawn intervals and enemy count
+            waveDuration = currentWaveDuration
         };
 
         OnNewWaveSpecificationGenerated?.Invoke(waveSpec);
@@ -77,7 +78,7 @@ public class WaveSystemManager : MonoBehaviour
 
     private List<EnemyGroup> GenerateEnemyGroupsForWave(int waveNumber)
     {
-        Controller targetController = null;
+        Controller targetController = GameManager.Instance.playerController;
         int maxNumberOfEnemies = 3;
         float maxEngagementDistance = 5f;
         int maxNumberOfEnemiesThatCanEngageSimultaneously = 1 + waveNumber / 20;

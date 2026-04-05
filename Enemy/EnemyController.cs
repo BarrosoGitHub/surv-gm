@@ -88,17 +88,13 @@ public class EnemyController : Controller
 
     public void Initialize()
     {
-        var playerObject = GameObject.FindGameObjectWithTag("Player");
-        if (playerObject != null)
-        {
-            Target = playerObject.GetComponent<PlayerController>();
-        }
+        
 
         if (navMeshAgent != null)
         {
             navMeshAgent.isStopped = false;
         }
 
-        State = pursuingState;
+        State = idlingState;
     }
 }
