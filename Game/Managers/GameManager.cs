@@ -5,13 +5,11 @@ using System;
 
 public class GameManager : MonoBehaviour
 {
-    public Action<Controller> OnPlayerSpawn;
-    public Action<Controller> OnPlayerDespawn;
     public Action<GameState> OnGameStateChanged;
 
     public static GameManager Instance;
-    private ControllerSpawner controllerSpawner;
 
+    [SerializeField]
     private GameState gameState;
     public GameState GameState
     {
@@ -26,8 +24,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public Transform playerSpawn;
-
     private void Awake()
     {
         if (Instance == null)
@@ -40,40 +36,10 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        GameState = GameState.MainMenu;
-
-        gameObject.AddComponent<EnemyManager>();
-        controllerSpawner = gameObject.AddComponent<ControllerSpawner>();
-
     }
 
     void Start()
     {
-        SpawnPlayer();
-    }
-
-    public void StartGame()
-    {
         GameState = GameState.Playing;
-    }
-
-    void SpawnPlayer()
-    {
-        Controller controller = controllerSpawner.SpawnController("Player", playerSpawn.position, Quaternion.identity);
-        OnPlayerSpawn?.Invoke(controller);
-
-        controller.OnControllerDied += EndGame;
-    }
-    void DespawnPlayer(Controller playerController)
-    {
-        OnPlayerDespawn?.Invoke(playerController);
-        playerController.OnControllerDied -= EndGame;
-
-        controllerSpawner.DespawnController("Player", playerController);
-    }
-
-    private void EndGame(Controller controller)
-    {
-        
     }
 }

@@ -1,6 +1,6 @@
 public enum WavePhase
 {
     WaveInProgress,
-    Break,
+    Complete,
     Stoped,
 }

@@ -6,42 +6,51 @@ using UnityEngine;
 public class WaveSystemManager : MonoBehaviour
 {
     public Action<WavePhase> OnWavePhaseChanged;
-    public Action<WaveSpecification> OnNewWaveStarted;
+    public Action<WaveSpecification> OnNewWaveSpecificationGenerated;
 
+    public GameManager gameManager;
 
-    [Header("Spawn Setup")]
-    [SerializeField] private EnemyController enemyPrefab;
-    [SerializeField] private List<Transform> spawnPoints = new List<Transform>();
-
-    [Header("Round Scaling")]
-    [SerializeField] private int initialEnemiesPerRound = 4;
-    [SerializeField] private int enemiesAddedPerRound = 2;
-    [SerializeField] private int maxAliveEnemiesAtOnce = 8;
-
-    [Header("Timing")]
-    [SerializeField] private float initialSpawnInterval = 1.2f;
-    [SerializeField] private float spawnIntervalReductionPerRound = 0.08f;
-    [SerializeField] private float minimumSpawnInterval = 0.3f;
-    [SerializeField] private float timeBetweenRounds = 4f;
-
-    [Header("Control")]
-    [SerializeField] private bool startOnAwake = true;
-
-    private readonly List<EnemyController> aliveEnemies = new List<EnemyController>();
-    private Coroutine roundLoopRoutine;
-
-    public int CurrentWave { get; private set; }
-    public bool IsRoundActive { get; private set; }
-
-    private void Start()
+    [SerializeField]
+    private WavePhase currentWavePhase;
+    public WavePhase CurrentWavePhase 
     {
-        if (startOnAwake)
+        get { return currentWavePhase; }
+        private set
         {
-            StartRounds();
+            if (currentWavePhase == value)
+                return;
+
+            currentWavePhase = value;
+            OnWavePhaseChanged?.Invoke(currentWavePhase);
         }
     }
 
-    public void StartWave()
+    public int CurrentWave { get; private set; }
+
+    private void Awake()
+    {
+        gameManager = GetComponent<GameManager>();
+
+        gameManager.OnGameStateChanged += OnGameStateChanged;
+    }
+
+    private IEnumerator StartWavesCoroutine()
+    {
+        while (true)
+        {
+            CurrentWave++;
+            GenerateWaveSpecification();
+
+
+            // Wait for the wave to end before starting the next one
+            yield return new WaitUntil(() => CurrentWavePhase == WavePhase.Complete);
+
+            // Add a short delay between waves if needed
+            yield return new WaitForSeconds(2f);
+        }
+    }
+
+    public void GenerateWaveSpecification()
     {
         WaveSpecification waveSpec = new WaveSpecification
         {
@@ -51,13 +60,11 @@ public class WaveSystemManager : MonoBehaviour
             waveDuration = 30f // TODO: calculate based on spawn intervals and enemy count
         };
 
-        OnNewWaveStarted?.Invoke(waveSpec);
-        OnWavePhaseChanged?.Invoke(WavePhase.WaveInProgress);
+        OnNewWaveSpecificationGenerated?.Invoke(waveSpec);
     }
 
     private List<EnemyGroup> GenerateEnemyGroupsForWave(int waveNumber)
     {
-
         Controller targetController = null;
         int maxNumberOfEnemies = 3;
         float maxEngagementDistance = 5f;
@@ -78,7 +85,7 @@ public class WaveSystemManager : MonoBehaviour
     {
         Dictionary<EnemyType, int> totals = new Dictionary<EnemyType, int>
         {
-            { EnemyType.Normal, initialEnemiesPerRound + (waveNumber - 1) * enemiesAddedPerRound },
+            { EnemyType.Normal, (waveNumber - 1) },
             { EnemyType.Tank, Mathf.Max(0, (waveNumber - 5) / 10) }, // Start spawning tanks at round 5, then add 1 every 10 rounds
             { EnemyType.Boss, waveNumber >= 5 ? 1 : 0 } // Spawn 1 boss every round starting at round 5
         };
@@ -86,125 +93,33 @@ public class WaveSystemManager : MonoBehaviour
         return totals;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void StartRounds()
+    private void OnGameStateChanged(GameState gameState)
     {
-        if (roundLoopRoutine != null)
+        switch (gameState)
         {
-            return;
-        }
+            case GameState.MainMenu:
+                CurrentWave = 0;
+                break;
+            case GameState.Playing:
+                StartWave();
+                break;
+            case GameState.Paused:
+   
+                break;
+            default:
 
-        roundLoopRoutine = StartCoroutine(RoundLoop());
-    }
-
-    public void StopRounds()
-    {
-        if (roundLoopRoutine == null)
-        {
-            return;
-        }
-
-        StopCoroutine(roundLoopRoutine);
-        roundLoopRoutine = null;
-        IsRoundActive = false;
-    }
-
-    private IEnumerator RoundLoop()
-    {
-        while (true)
-        {
-            CurrentWave++;
-            IsRoundActive = true;
-            OnRoundStarted?.Invoke(CurrentWave);
-
-            int enemiesToSpawn = initialEnemiesPerRound + (CurrentWave - 1) * enemiesAddedPerRound;
-            int spawnedThisRound = 0;
-            float spawnInterval = Mathf.Max(
-                minimumSpawnInterval,
-                initialSpawnInterval - (CurrentWave - 1) * spawnIntervalReductionPerRound
-            );
-
-            while (spawnedThisRound < enemiesToSpawn || aliveEnemies.Count > 0)
-            {
-                while (spawnedThisRound < enemiesToSpawn && aliveEnemies.Count < maxAliveEnemiesAtOnce)
-                {
-                    SpawnEnemy();
-                    spawnedThisRound++;
-                    yield return new WaitForSeconds(spawnInterval);
-                }
-
-                aliveEnemies.RemoveAll(enemy => enemy == null);
-
-                if (spawnedThisRound >= enemiesToSpawn && aliveEnemies.Count == 0)
-                {
-                    break;
-                }
-
-                yield return null;
-            }
-
-            IsRoundActive = false;
-            OnRoundCompleted?.Invoke(CurrentWave);
-            yield return new WaitForSeconds(timeBetweenRounds);
+                break;
         }
     }
 
-    private void SpawnEnemy()
+    private void OnEnable()
     {
-        if (enemyPrefab == null)
-        {
-            Debug.LogWarning("RoundSystemManager is missing an enemy prefab reference.");
-            return;
-        }
+        gameManager.OnGameStateChanged += OnGameStateChanged;
 
-        if (spawnPoints.Count == 0)
-        {
-            Debug.LogWarning("RoundSystemManager has no spawn points assigned.");
-            return;
-        }
-
-        Transform spawnPoint = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Count)];
-        EnemyController enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
-        enemy.Initialize();
-        aliveEnemies.Add(enemy);
-        // enemy.OnControllerDied += HandleEnemyDied;
     }
 
-    // private void HandleEnemyDied(Controller enemy)
-    // {
-    //     if (enemy != null)
-    //     {
-    //         enemy.OnDied -= HandleEnemyDied;
-    //     }
-
-    //     aliveEnemies.Remove((EnemyController) enemy);
-    // }
-
-    private void OnDestroy()
+    private void OnDisable()
     {
-        foreach (EnemyController enemy in aliveEnemies)
-        {
-            if (enemy != null)
-            {
-                // enemy.OnDied -= HandleEnemyDied;
-            }
-        }
-
-        aliveEnemies.Clear();
+        gameManager.OnGameStateChanged -= OnGameStateChanged;
     }
 }
