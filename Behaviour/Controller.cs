@@ -5,8 +5,6 @@ using DG.Tweening;
 
 public abstract class Controller : MonoBehaviour
 {
-    public Action<Controller, InteractionContext> OnInteract;
-    public Action<Controller, InteractionContext> OnReceivedInteraction;
     public Action<ActionInstance> OnActionInstancePerformed;
     public Action<float, ActionInstance> OnPreparingActionInstance;
     public Action<float, ActionInstance> OnExecutingActionInstance;
@@ -114,24 +112,9 @@ public abstract class Controller : MonoBehaviour
 
     private void Interact(Controller other, InteractionContext ctx)
     {
-        InteractionContext result = ResolveInteraction(other, ctx);
-
-        OnInteract?.Invoke(other, result);
-        other.OnReceivedInteraction?.Invoke(this, result);
-    }
-
-    private InteractionContext ResolveInteraction(Controller other, InteractionContext ctx)
-    {
-        switch (ctx.Type)
+        if (!InteractionManager.Instance.TryProcessInteraction(this, other, ctx, out _))
         {
-            case InteractionType.Attack:
-                DamageResult dmg = entity.Attack(other.entity);
-                return new InteractionContext { Type = InteractionType.Attack, Value = dmg.Damage, IsCritical = dmg.IsCritical };
-            case InteractionType.Heal:
-                other.entity.Heal(ctx.Value);
-                return ctx;
-            default:
-                return ctx;
+            return;
         }
     }
 

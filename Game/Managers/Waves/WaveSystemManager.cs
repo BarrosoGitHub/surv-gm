@@ -39,7 +39,6 @@ public class WaveSystemManager : MonoBehaviour
         while (true)
         {
             StartNewWave();
-            Debug.Log($"Started wave {CurrentWave}");
 
             // Wait for the wave to end before starting the next one
             yield return new WaitUntil(() => CurrentWavePhase == WavePhase.Complete);

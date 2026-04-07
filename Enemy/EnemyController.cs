@@ -88,13 +88,18 @@ public class EnemyController : Controller
 
     public void Initialize()
     {
-        
-
         if (navMeshAgent != null)
         {
             navMeshAgent.isStopped = false;
         }
 
         State = idlingState;
+    }
+
+    public override void OnDied()
+    {
+        base.OnDied();
+
+        State = deadState;
     }
 }

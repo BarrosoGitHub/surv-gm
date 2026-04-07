@@ -29,7 +29,6 @@ public class EnemyManager : MonoBehaviour
 
     private void OnWavePhaseChanged(WavePhase wavePhase)
     {
-        Debug.Log($"Wave phase changed: {wavePhase}");
         if (wavePhase == WavePhase.WaveInProgress)
         {
             foreach (EnemyGroup enemyGroup in currentWaveSpecification.enemyGroups)
@@ -72,6 +71,7 @@ public class EnemyManager : MonoBehaviour
                     break;
                 }
             }
+            //Addition check enemies that are not in any group (e.g. spawned but not yet added to the group)
         }
     }
 
@@ -134,31 +134,30 @@ public class EnemyManager : MonoBehaviour
 
     private IEnumerator RefreshAttackingEnemyGroupCoroutine(EnemyGroup enemyGroup)
     {
-        Debug.Log($"Started refreshing attacking enemy group coroutine for group: {enemyGroup.EnemyType}");
-        Debug.Log($"Current enemies in group: {enemyGroup.EnemyList.Count}");
-        Debug.Log($"Target controller: {enemyGroup.TargetController}");
-        
-        List<EnemyController> closestEnemyControllers = GetClosestEnemyControllers(enemyGroup.MaxNumberOfEnemies, enemyGroup.TargetController.transform.position, enemyGroup.MaxEngagementDistance);
-
-        List<EnemyController> enemiesToRemove = enemyGroup.EnemyList.Except(closestEnemyControllers).ToList();
-        List<EnemyController> enemiesToAdd = closestEnemyControllers.Except(enemyGroup.EnemyList).ToList();
-
-        foreach (EnemyController enemyController in enemiesToRemove)
+        while (true)
         {
-            RemoveControllerFromGroup(enemyGroup, enemyController);
-        }
+            List<EnemyController> closestEnemyControllers = GetClosestEnemyControllers(enemyGroup.MaxNumberOfEnemies, enemyGroup.TargetController.transform.position, enemyGroup.MaxEngagementDistance);
 
-        foreach (EnemyController enemyController in enemiesToAdd)
-        {
-            AddEnemyToGroup(enemyGroup, enemyController);
-        }
+            List<EnemyController> enemiesToRemove = enemyGroup.EnemyList.Except(closestEnemyControllers).ToList();
+            List<EnemyController> enemiesToAdd = closestEnemyControllers.Except(enemyGroup.EnemyList).ToList();
 
-        yield return new WaitForSeconds(1f);
+            foreach (EnemyController enemyController in enemiesToRemove)
+            {
+                RemoveControllerFromGroup(enemyGroup, enemyController);
+            }
+
+            foreach (EnemyController enemyController in enemiesToAdd)
+            {
+                AddEnemyToGroup(enemyGroup, enemyController);
+            }
+
+            yield return new WaitForSeconds(1f);
+        }
     }
 
-    private List<EnemyController> GetClosestEnemyControllers(int maxNumberOfEnemies, Vector3 position, float radious)
+    private List<EnemyController> GetClosestEnemyControllers(int maxNumberOfEnemies, Vector3 position, float radius)
     {
-        return Physics.OverlapSphere(position, radious)
+        return Physics.OverlapSphere(position, radius)
             .Select(c => c.GetComponent<EnemyController>())
             .Where(e => e != null && (e.State == e.idlingState || e.State == e.pursuingState))
             .OrderBy(e => (e.transform.position - position).sqrMagnitude)

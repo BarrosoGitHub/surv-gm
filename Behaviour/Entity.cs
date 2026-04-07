@@ -113,6 +113,8 @@ public class Entity
 
         CurrentHealth -= mitigated;
 
+        Debug.Log($"Entity {GetHashCode()} took {mitigated} damage. Current health: {CurrentHealth}");
+
         return mitigated;
     }
 
