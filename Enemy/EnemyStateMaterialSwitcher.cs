@@ -20,23 +20,19 @@ public class EnemyStateMaterialSwitcher : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        if (enemyController == null)
-        {
-            return;
-        }
 
-        enemyController.OnStateChanged += OnEnemyStateChanged;
-        enemyController.OnControllerDied += OnEnemyDied;
-    }
 
     private void Start()
     {
+        if (enemyController != null)
+        {
+            enemyController.OnStateChanged += OnEnemyStateChanged;
+        }
+
         ApplyFromCurrentState();
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         if (enemyController == null)
         {
@@ -44,8 +40,9 @@ public class EnemyStateMaterialSwitcher : MonoBehaviour
         }
 
         enemyController.OnStateChanged -= OnEnemyStateChanged;
-        enemyController.OnControllerDied -= OnEnemyDied;
     }
+
+
 
     private void OnEnemyStateChanged(State state)
     {
@@ -72,10 +69,6 @@ public class EnemyStateMaterialSwitcher : MonoBehaviour
         }
     }
 
-    private void OnEnemyDied(Controller controller)
-    {
-        ApplyMaterial(deadMaterial);
-    }
 
     private void ApplyFromCurrentState()
     {

@@ -23,7 +23,6 @@ public class EnemyManager : MonoBehaviour
 
     private void OnWaveSpecificationChanged(WaveSpecification waveSpecification)
     {
-        Debug.Log($"New wave specification generated: {waveSpecification}");
         currentWaveSpecification = waveSpecification;
     }
 
@@ -50,36 +49,46 @@ public class EnemyManager : MonoBehaviour
 
         enemyController.OnControllerDied += OnEnemyDied;
 
+        enemyController.Target = enemyGroup.TargetController;
+        enemyController.State = enemyController.idlingState;
+        enemyController.entity.CurrentHealth = 1; // this needs a better way
+
         return enemyController;
     }
 
     private void OnEnemyDied(Controller controller)
     {
         EnemyController enemyController = controller as EnemyController;
-        if (enemyController != null)
+        if (enemyController == null) return;
+
+        enemyController.OnControllerDied -= OnEnemyDied;
+
+        foreach (EnemyGroup group in currentWaveSpecification.enemyGroups)
         {
-            foreach (EnemyGroup group in currentWaveSpecification.enemyGroups)
+            if (group.EnemyList.Contains(enemyController))
             {
-                if (group.EnemyList.Contains(enemyController))
-                {
-                    enemyController.OnControllerDied -= OnEnemyDied;
-
-                    group.EnemyList.Remove((EnemyController)enemyController);
-
-                    controllerSpawner.DespawnController(group.EnemyType.ToString(), controller);
-
-                    break;
-                }
+                group.EnemyList.Remove(enemyController);
+                break;
             }
-            //Addition check enemies that are not in any group (e.g. spawned but not yet added to the group)
         }
+
+        controllerSpawner.DespawnController("Normal", enemyController);
+        Debug.Log($"Enemy {enemyController.GetHashCode()} died and despawned.");
     }
 
     private IEnumerator SpawnEnemiesCoroutine(EnemyGroup enemyGroup)
     {
-        while (true)
+        if (enemyGroup.MaxNumberOfEnemies <= 0)
+        {
+            yield break;
+        }
+
+        int spawnedCount = 0;
+        while (spawnedCount < enemyGroup.MaxNumberOfEnemies)
         {
             SpawnEnemy(enemyGroup);
+            spawnedCount++;
+
             float spawnInterval = currentWaveSpecification.waveDuration / enemyGroup.MaxNumberOfEnemies; // TODO: calculate based on wave specification
             yield return new WaitForSeconds(spawnInterval); // Wait for 5 seconds before the next spawn
         }

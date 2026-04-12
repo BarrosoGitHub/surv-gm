@@ -98,8 +98,8 @@ public class WaveSystemManager : MonoBehaviour
         Dictionary<EnemyType, int> totals = new Dictionary<EnemyType, int>
         {
             { EnemyType.Normal, (waveNumber - 1) },
-            { EnemyType.Tank, Mathf.Max(0, (waveNumber - 5) / 10) }, // Start spawning tanks at round 5, then add 1 every 10 rounds
-            { EnemyType.Boss, waveNumber >= 5 ? 1 : 0 } // Spawn 1 boss every round starting at round 5
+            // { EnemyType.Tank, Mathf.Max(0, (waveNumber - 5) / 10) }, // Start spawning tanks at round 5, then add 1 every 10 rounds
+            // { EnemyType.Boss, waveNumber >= 5 ? 1 : 0 } // Spawn 1 boss every round starting at round 5
         };
 
         return totals;

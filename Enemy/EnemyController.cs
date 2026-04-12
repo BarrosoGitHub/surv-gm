@@ -9,6 +9,9 @@ public class EnemyController : Controller
     public List<State> states;
     public State inactiveState, idlingState, pursuingState, bracingState, stunnedState, deadState;
 
+    private float moveTimer = 0f;
+    private Vector3 currentDestination;
+
     protected override void Awake()
     {
         base.Awake();
@@ -23,7 +26,7 @@ public class EnemyController : Controller
 
         Initialize();
     }
-    
+
     private void SetStates()
     {
         states = new List<State>
@@ -39,6 +42,10 @@ public class EnemyController : Controller
 
     public override void SetOnEnterState()
     {
+        idlingState.OnEnterState += () =>
+        {
+            navMeshAgent.enabled = true;
+        };
         pursuingState.OnEnterState += () =>
         {
             navMeshAgent.speed = 5;
@@ -48,8 +55,9 @@ public class EnemyController : Controller
         {
             if (navMeshAgent != null)
             {
-                navMeshAgent.isStopped = true;
+                navMeshAgent.enabled = false;
             }
+            Target = null;
         };
     }
 
@@ -66,9 +74,30 @@ public class EnemyController : Controller
     public override void SetOnFixedUpdateState()
     {
         idlingState.OnFixedUpdate += () =>
-        {
-            navMeshAgent.SetDestination(transform.position);
-        };
+           {
+               // Check if the current destination is not set or if the move timer has reached 5 seconds
+               if (currentDestination == Vector3.zero || moveTimer >= 5f)
+               {
+                   // Define a random range for the enemy to move within
+                   float randomRange = 10f; // Adjust this value as needed
+
+                   // Calculate a random position within the range
+                   currentDestination = transform.position + new Vector3(
+                       UnityEngine.Random.Range(-randomRange, randomRange),
+                       0,
+                       UnityEngine.Random.Range(-randomRange, randomRange)
+                   );
+
+                   // Reset the move timer
+                   moveTimer = 0f;
+               }
+
+               // Set the destination to the current destination
+               navMeshAgent.SetDestination(currentDestination);
+
+               // Increment the move timer
+               moveTimer += Time.fixedDeltaTime;
+           };
 
         pursuingState.OnFixedUpdate += () =>
         {

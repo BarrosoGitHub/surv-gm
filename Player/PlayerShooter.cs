@@ -4,11 +4,8 @@ public class PlayerShooter : MonoBehaviour
 {
     [Header("Shoot Settings")]
     [SerializeField] private float range = 50f;
-    [SerializeField] private float fireRate = 2f;
+    [SerializeField] private float fireRate = 1f;
 
-    [Header("Visual")]
-    [SerializeField] private GameObject muzzleFlashPrefab;
-    [SerializeField] private float muzzleFlashDuration = 0.05f;
 
     public PlayerController playerController;
 
@@ -23,6 +20,7 @@ public class PlayerShooter : MonoBehaviour
         if (target != null)
         {
             _nextFireTime = Time.time + fireRate;
+            Debug.Log($"Shooting at SHOOT!");
             Shoot(target);
         }
     }

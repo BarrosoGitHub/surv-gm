@@ -26,10 +26,11 @@ public class Entity
             {
                 currentHealth = stats.MaxHealth;
             }
-            else if (value < 0)
+            else if (value <= 0)
             {
                 currentHealth = 0;
                 OnEntityDied?.Invoke();
+                Debug.Log($"Entity {GetHashCode()} died.");
             }
             else
             {
