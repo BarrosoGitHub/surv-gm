@@ -44,7 +44,6 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         GameState = GameState.Playing;
-        
     }
 
     private void GetPlayerController()

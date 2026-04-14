@@ -95,6 +95,7 @@ public abstract class Controller : MonoBehaviour
         SetOnExitState();
         SetOnUpdateState();
         SetOnFixedUpdateState();
+        SetActions();
     }
 
     public abstract void SetOnEnterState();
@@ -104,6 +105,8 @@ public abstract class Controller : MonoBehaviour
     public abstract void SetOnUpdateState();
 
     public abstract void SetOnFixedUpdateState();
+
+    public abstract void SetActions();
 
     public void AttackController(Controller target)
     {

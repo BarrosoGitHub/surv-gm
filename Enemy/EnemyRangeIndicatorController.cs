@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -5,7 +6,6 @@ public class EnemyRangeIndicatorController : MonoBehaviour
 {
     [Header("Indicator")]
     [SerializeField] private Renderer indicatorRenderer;
-    [SerializeField] private bool hideOnStart = true;
 
     [Header("Shader Settings")]
     [SerializeField] private Color indicatorColor = new Color(1f, 0.2f, 0.2f, 0.45f);
@@ -15,15 +15,10 @@ public class EnemyRangeIndicatorController : MonoBehaviour
     [SerializeField, Min(0f)] private float edgeSoftness = 0.35f;
     [SerializeField, Range(0f, 1f)] private float fill;
 
-    [Header("Fill Animation")]
-    [SerializeField, Min(0f)] private float fillSpeed = 1f;
-    [SerializeField] private bool autoFill;
-
-    [Header("Optional State Sync")]
-    [SerializeField] private bool syncWithEnemyState;
     [SerializeField] private EnemyController enemyController;
 
     private MaterialPropertyBlock materialPropertyBlock;
+    private Tween fillTween;
 
     private static readonly int ColorId = Shader.PropertyToID("_Color");
     private static readonly int FillColorId = Shader.PropertyToID("_FillColor");
@@ -39,7 +34,7 @@ public class EnemyRangeIndicatorController : MonoBehaviour
             indicatorRenderer = GetComponentInChildren<Renderer>(true);
         }
 
-        if (syncWithEnemyState && enemyController == null)
+        if (enemyController == null)
         {
             enemyController = GetComponent<EnemyController>();
         }
@@ -47,58 +42,16 @@ public class EnemyRangeIndicatorController : MonoBehaviour
         materialPropertyBlock = new MaterialPropertyBlock();
     }
 
-    private void OnEnable()
-    {
-        if (syncWithEnemyState && enemyController != null)
-        {
-            enemyController.OnStateChanged += OnEnemyStateChanged;
-        }
-    }
-
     private void Start()
     {
         ApplyToMaterial();
+        Hide();
 
-        if (syncWithEnemyState && enemyController != null)
+        if (enemyController != null)
         {
-            OnEnemyStateChanged(enemyController.State);
-            return;
-        }
-
-        if (hideOnStart)
-        {
-            Hide();
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (enemyController == null)
-        {
-            return;
-        }
-
-        enemyController.OnStateChanged -= OnEnemyStateChanged;
-    }
-
-    private void OnValidate()
-    {
-        range = Mathf.Max(0f, range);
-        edgeSoftness = Mathf.Max(0f, edgeSoftness);
-
-        if (!Application.isPlaying)
-        {
-            if (indicatorRenderer == null)
-            {
-                indicatorRenderer = GetComponentInChildren<Renderer>(true);
-            }
-
-            if (materialPropertyBlock == null)
-            {
-                materialPropertyBlock = new MaterialPropertyBlock();
-            }
-
-            ApplyToMaterial();
+            enemyController.OnPreparingActionInstance += OnAttackPreparing;
+            enemyController.OnExecutingActionInstance += OnAttackExecuting;
+            enemyController.OnCompleteActionInstance += OnAttackComplete;
         }
     }
 
@@ -176,38 +129,32 @@ public class EnemyRangeIndicatorController : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void OnAttackPreparing(float preparingTime, ActionInstance actionInstance)
     {
-        if (!autoFill || !indicatorRenderer || !indicatorRenderer.gameObject.activeSelf)
-        {
-            return;
-        }
+        if (actionInstance is not AttackWithRange) return;
 
-        if (fill < 1f)
-        {
-            fill = Mathf.Clamp01(fill + fillSpeed * Time.deltaTime);
-            ApplyToMaterial();
-        }
+        Show();
+
+        fillTween?.Kill();
+        fill = 0f;
+        fillTween = DOTween.To(() => fill, x => { fill = x; ApplyToMaterial(); }, 1f, preparingTime)
+            .SetEase(Ease.Linear);
     }
 
-    private void OnEnemyStateChanged(State state)
+    private void OnAttackExecuting(float executingTime, ActionInstance actionInstance)
     {
-        if (enemyController == null)
-        {
-            return;
-        }
+        if (actionInstance is not AttackWithRange) return;
+        fillTween?.Kill();
 
-        bool shouldShow = state == enemyController.pursuingState;
+    }
 
-        if (shouldShow)
-        {
-            ResetFill();
-            Show();
-        }
-        else
-        {
-            Hide();
-        }
+    private void OnAttackComplete(ActionInstance actionInstance)
+    {
+        if (actionInstance is not AttackWithRange) return;
+        Debug.Log($"Enemy {enemyController.GetHashCode()} completed AttackWithRange action.");
+        fillTween?.Kill();
+        Hide();
+        ResetFill();
     }
 
     private void ApplyToMaterial()
@@ -225,5 +172,20 @@ public class EnemyRangeIndicatorController : MonoBehaviour
         materialPropertyBlock.SetFloat(EdgeSoftnessId, edgeSoftness);
         materialPropertyBlock.SetFloat(FillId, fill);
         indicatorRenderer.SetPropertyBlock(materialPropertyBlock);
+    }
+
+    private void OnEnable()
+    {
+        
+    }
+
+    private void OnDisable()
+    {
+        if (enemyController != null)
+        {
+            enemyController.OnPreparingActionInstance -= OnAttackPreparing;
+            enemyController.OnExecutingActionInstance -= OnAttackExecuting;
+            enemyController.OnCompleteActionInstance -= OnAttackComplete;
+        }
     }
 }

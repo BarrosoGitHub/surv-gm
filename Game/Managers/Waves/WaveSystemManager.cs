@@ -79,10 +79,11 @@ public class WaveSystemManager : MonoBehaviour
     {
         Controller targetController = GameManager.Instance.playerController;
         int maxNumberOfEnemies = 3;
-        float maxEngagementDistance = 5f;
+        float maxEngagementDistance = 15f;
         int maxNumberOfEnemiesThatCanEngageSimultaneously = 1 + waveNumber / 20;
-        float attackInterval = Mathf.Max(0.2f, 1f / (1f + 0.3f * Mathf.Log(waveNumber))); // Round 10 0.59s, Round 20 0.53s, 
+        // float attackInterval = Mathf.Max(0.2f, 1f / (1f + 0.3f * Mathf.Log(waveNumber))); // Round 10 0.59s, Round 20 0.53s, 
 
+        float attackInterval = 1f;
         List<EnemyGroup> enemyGroups = new List<EnemyGroup>
         {
             new EnemyGroup(EnemyType.Normal, targetController, maxNumberOfEnemies, maxEngagementDistance, maxNumberOfEnemiesThatCanEngageSimultaneously, attackInterval),

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -15,16 +14,14 @@ public class EnemyController : Controller
     protected override void Awake()
     {
         base.Awake();
+        SetStates();
 
         navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
     public override void Start()
     {
-        SetStates();
         base.Start();
-
-        Initialize();
     }
 
     private void SetStates()
@@ -110,20 +107,24 @@ public class EnemyController : Controller
         };
     }
 
+    public override void SetActions()
+    {
+        ActionInstances = new List<ActionInstance>
+        {
+            new AttackWithRange(this, 1, 0.5f)
+        };
+    }
+
+    public void Attack()
+    {
+        PerformAction(ActionInstances[0]);
+    }
+
     private void FixedUpdate()
     {
         State.OnFixedUpdate?.Invoke();
     }
 
-    public void Initialize()
-    {
-        if (navMeshAgent != null)
-        {
-            navMeshAgent.isStopped = false;
-        }
-
-        State = idlingState;
-    }
 
     public override void OnDied()
     {

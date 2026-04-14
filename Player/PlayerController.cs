@@ -76,6 +76,11 @@ public class PlayerController : Controller
         };
     }
 
+    public override void SetActions()
+    {
+        
+    }
+
     private void Update()
     {
         State.OnUpdate?.Invoke();
