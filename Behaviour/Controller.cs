@@ -17,6 +17,9 @@ public abstract class Controller : MonoBehaviour
     private State state;
     private Controller target;
 
+    [Header("Debug")]
+    [SerializeField] private string currentStateName;
+
     public State State
     {
         get
@@ -36,6 +39,7 @@ public abstract class Controller : MonoBehaviour
             }
 
             state = value;
+            currentStateName = !string.IsNullOrEmpty(state.Name) ? state.Name : state.Type.ToString();
 
             state.OnEnterState?.Invoke();
 

@@ -28,12 +28,12 @@ public class EnemyController : Controller
     {
         states = new List<State>
         {
-            (inactiveState = new State()),
-            (idlingState = new State()),
-            (pursuingState = new State()),
-            (bracingState = new State()),
-            (stunnedState = new State()),
-            (deadState = new State())
+            (inactiveState = new State("Inactive")),
+            (idlingState = new State("Idling")),
+            (pursuingState = new State("Pursuing")),
+            (bracingState = new State("Bracing")),
+            (stunnedState = new State("Stunned")),
+            (deadState = new State("Dead"))
         };
     }
 

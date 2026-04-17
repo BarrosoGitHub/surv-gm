@@ -28,7 +28,15 @@ public class AttackWithRange : ActionInstance
 
     public override void Complete()
     {
-        controller.State = controller.pursuingState;
+        if (controller.Target != null)
+        {
+            controller.State = controller.pursuingState;
+            Debug.Log("Target is valid. Enemy state set to pursuingState.");
+        }
+        else
+        {
+            controller.State = controller.idlingState;
+        }
     }
 
     public override void Cancel()

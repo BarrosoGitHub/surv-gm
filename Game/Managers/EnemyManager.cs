@@ -9,6 +9,7 @@ public class EnemyManager : MonoBehaviour
     private WaveSpecification currentWaveSpecification;
     private WaveSystemManager waveSystemManager;
     private ControllerSpawner controllerSpawner;
+    private readonly Dictionary<EnemyGroup, Coroutine> refreshCoroutines = new Dictionary<EnemyGroup, Coroutine>();
 
     void Awake()
     {
@@ -31,6 +32,7 @@ public class EnemyManager : MonoBehaviour
                 StartCoroutine(SpawnEnemiesCoroutine(enemyGroup));
                 StartCoroutine(PerformEnemyGroupAttackCoroutine(enemyGroup));
                 StartCoroutine(RefreshAttackingEnemyGroupCoroutine(enemyGroup));
+                // NEW COROUTINE KEEPS SPAWNING, THIS IS WRONG, FIX THIS
             }
         }
         if (wavePhase == WavePhase.Stoped)
@@ -92,58 +94,64 @@ public class EnemyManager : MonoBehaviour
 
     private IEnumerator PerformEnemyGroupAttackCoroutine(EnemyGroup enemyGroup)
     {
-        List<EnemyController> enemiesToPerformAttack = new List<EnemyController>();
-        var targetPosition = enemyGroup.TargetController.transform.position;
-
-        while (enemiesToPerformAttack.Count == 0)
+        while (true)
         {
-            if (enemyGroup.EnemyList.Count == 0)
+            List<EnemyController> enemiesToPerformAttack = new List<EnemyController>();
+
+            while (enemiesToPerformAttack.Count == 0)
             {
-                yield return null;
-                continue;
-            }
+                var targetPosition = enemyGroup.TargetController.transform.position;
 
-            var orderedEnemiesByDistance = enemyGroup.EnemyList
-                        .OrderBy(c => (c.transform.position - targetPosition).sqrMagnitude)
-                        .ToList();
-
-            if (orderedEnemiesByDistance.Count > 0 &&
-                    Vector3.Distance(targetPosition,
-                        orderedEnemiesByDistance[0].transform.position) > enemyGroup.MaxEngagementDistance)
-            {
-                yield return null;
-                continue;
-            }
-
-            int numberOfSimultaneousAttackersCount = 0;
-
-            for (int i = 0; i < orderedEnemiesByDistance.Count; i++)
-            {
-                if (numberOfSimultaneousAttackersCount >= enemyGroup.MaxNumberOfEnemiesThatCanEngageSimultaneously)
+                if (enemyGroup.EnemyList.Count == 0)
                 {
-                    break;
+                    Debug.Log("No enemies in the group to attack.");
+                    yield return null;
+                    continue;
                 }
 
-                EnemyController enemyController = orderedEnemiesByDistance[i];
-                if (enemyController.State == enemyController.pursuingState)
+                var orderedEnemiesByDistance = enemyGroup.EnemyList
+                            .OrderBy(c => (c.transform.position - targetPosition).sqrMagnitude)
+                            .ToList();
+
+                if (orderedEnemiesByDistance.Count > 0 &&
+                        Vector3.Distance(targetPosition,
+                            orderedEnemiesByDistance[0].transform.position) > 2)
                 {
-                    enemiesToPerformAttack.Add(enemyController);
-                    numberOfSimultaneousAttackersCount++;
+                    Debug.Log("No enemies within engagement distance to attack.");
+                    yield return null;
+                    continue;
+                }
+
+                int numberOfSimultaneousAttackersCount = 0;
+
+                for (int i = 0; i < orderedEnemiesByDistance.Count; i++)
+                {
+                    if (numberOfSimultaneousAttackersCount >= enemyGroup.MaxNumberOfEnemiesThatCanEngageSimultaneously)
+                    {
+                        break;
+                    }
+
+                    EnemyController enemyController = orderedEnemiesByDistance[i];
+                    if (enemyController.State == enemyController.pursuingState)
+                    {
+                        enemiesToPerformAttack.Add(enemyController);
+                        numberOfSimultaneousAttackersCount++;
+                    }
+                }
+
+                if (enemiesToPerformAttack.Count == 0)
+                {
+                    yield return null;
                 }
             }
 
-            if (enemiesToPerformAttack.Count == 0)
+            foreach (EnemyController enemyController in enemiesToPerformAttack)
             {
-                yield return null;
+                enemyController.Attack();
             }
-        }
 
-        foreach (EnemyController enemyController in enemiesToPerformAttack)
-        {
-            enemyController.Attack();
+            yield return new WaitForSeconds(2);
         }
-
-        yield return new WaitForSeconds(enemyGroup.AttackInterval);
     }
 
     private IEnumerator RefreshAttackingEnemyGroupCoroutine(EnemyGroup enemyGroup)
@@ -154,7 +162,7 @@ public class EnemyManager : MonoBehaviour
 
             List<EnemyController> enemiesToRemove = enemyGroup.EnemyList.Except(closestEnemyControllers).ToList();
             List<EnemyController> enemiesToAdd = closestEnemyControllers.Except(enemyGroup.EnemyList).ToList();
-            Debug.Log($"Refreshing attacking enemies for group targeting {enemyGroup.TargetController.GetHashCode()}. Enemies to remove: {string.Join(", ", enemiesToRemove.Select(e => e.GetHashCode()))}, Enemies to add: {string.Join(", ", enemiesToAdd.Select(e => e.GetHashCode()))}");
+
             foreach (EnemyController enemyController in enemiesToRemove)
             {
                 RemoveControllerFromGroup(enemyGroup, enemyController);
@@ -165,7 +173,7 @@ public class EnemyManager : MonoBehaviour
                 AddEnemyToGroup(enemyGroup, enemyController);
             }
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1);
         }
     }
 
@@ -184,7 +192,11 @@ public class EnemyManager : MonoBehaviour
         if (enemyGroup.EnemyList.Contains(enemyController))
         {
             enemyGroup.EnemyList.Remove(enemyController);
-            enemyController.State = enemyController.idlingState;
+            enemyController.Target = null;
+            if (enemyController.State == enemyController.pursuingState)
+            {
+                enemyController.State = enemyController.idlingState;
+            }
         }
     }
 
@@ -194,9 +206,10 @@ public class EnemyManager : MonoBehaviour
         {
             enemyGroup.EnemyList.Add(enemyController);
             enemyController.Target = enemyGroup.TargetController;
-            enemyController.State = enemyController.pursuingState;
-
-            Debug.Log($"Enemy {enemyController.GetHashCode()} added to group targeting {enemyGroup.TargetController.GetHashCode()} and set to pursuing state.");
+            if (enemyController.State == enemyController.idlingState)
+            {
+                enemyController.State = enemyController.pursuingState;
+            }
         }
     }
 

@@ -133,6 +133,7 @@ public class EnemyRangeIndicatorController : MonoBehaviour
     {
         if (actionInstance is not AttackWithRange) return;
 
+        Debug.Log($"PREPPARING");
         Show();
 
         fillTween?.Kill();
@@ -151,7 +152,6 @@ public class EnemyRangeIndicatorController : MonoBehaviour
     private void OnAttackComplete(ActionInstance actionInstance)
     {
         if (actionInstance is not AttackWithRange) return;
-        Debug.Log($"Enemy {enemyController.GetHashCode()} completed AttackWithRange action.");
         fillTween?.Kill();
         Hide();
         ResetFill();
@@ -174,12 +174,7 @@ public class EnemyRangeIndicatorController : MonoBehaviour
         indicatorRenderer.SetPropertyBlock(materialPropertyBlock);
     }
 
-    private void OnEnable()
-    {
-        
-    }
-
-    private void OnDisable()
+    private void OnDestroy()
     {
         if (enemyController != null)
         {

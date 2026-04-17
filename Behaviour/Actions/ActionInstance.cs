@@ -8,8 +8,8 @@ public abstract class ActionInstance
 
     protected void InitializeStates()
     {
-        preparing = new State(StateType.PREPARING);
-        executing = new State(StateType.EXECUTING);
+        preparing = new State(StateType.PREPARING, "Preparing");
+        executing = new State(StateType.EXECUTING, "Executing");
     }
 
     public abstract void Preparing();
